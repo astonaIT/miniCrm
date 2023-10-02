@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+     <style>
+      .nav-link {
+        cursor:pointer;
+      }
+      .dropdown-item {
+      cursor:pointer;
+      }
+      #loading {
+        position: fixed;
+        top:0;
+        left:0;
+        z-index: 10000;
+        height:100%;
+        width: 100%;
+        
+        background-color: rgba(255,255,255,0.7)
+      }
+      #container {
+      padding-left: 50px;
+        
+      }
+
+    </style>
+  </head>
+  <body>
+
+<div id="container">
+    <nav id = "navigation" class = "mb-3">
+      <ul class="nav nav-tabs main-nav" >
+          <li class="nav-item">
+            <div class="nav-link active" aria-current="page" id = "home">Home</div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link" aria-current="page" id = "viewOpps">Opportunities</div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link" aria-current="page" id = "createNewOpp">Create a new opp</div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link" aria-current="page" id = "viewRegistry">Clients registry</div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link" aria-current="page" id = "addCompany">Add company</div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link" aria-current="page" id = "dashboard">Dashboard</div>
+          </li>
+      </ul>
+    </nav>
+  <div id= "app"> </div>
+</div>
+
+  <div id = "loading" class = "d-flex justify-content-center align-items-center invisible"> 
+    <div class="spinner-border text-primary" style="width: 6rem; height: 6rem;" role="status">
+      
+    </div>
+  </div>
+
+
+  <script> 
+  //ui funcs
+  function activeTabChange(e){
+   var navLinks = document.querySelectorAll(".main-nav .nav-link");
+   navLinks.forEach(function(linkEl){
+    linkEl.classList.remove("active")
+   });
+   e.target.classList.add("active")
+  };
+
+  function navClickEventHandler(e){
+  if(e.target.matches(".nav-link")){
+        activeTabChange(e)
+    }
+  }
+
+
+  function loadingStart(){
+    //console.log("loading start")
+    document.getElementById("loading").classList.remove("invisible")
+  };
+
+  function loadingEnd(){
+    //console.log("loading finish")
+    document.getElementById("loading").classList.add("invisible")
+  };
+  
+///
+  var oppData;
+  var registryData;
+  var user;
+  var dropdownObj;
+  var productsArray;
+
+  document.addEventListener("DOMContentLoaded", loadHome);
+  document.getElementById("navigation").addEventListener("click", navClickEventHandler);
+
+  document.getElementById("home").addEventListener("click",loadHome);
+  document.getElementById("dashboard").addEventListener("click",loadDash);
+
+  document.getElementById("viewRegistry").addEventListener("click",loadRegistry);
+  document.getElementById("addCompany").addEventListener("click",loadCreateCompany);
+
+  document.getElementById("viewOpps").addEventListener("click",loadViewOpp);
+  document.getElementById("createNewOpp").addEventListener("click",loadCreateOpp);
+
+  document.getElementById("app").addEventListener("input", inputEventHandler);
+  document.getElementById("app").addEventListener("click", clickEventHandler);
+  document.getElementById("app").addEventListener("change", changeEventHandler);
+
+
+  function loadDash(){
+  loadingStart();
+  loadView({func:"loadDashView", callback: endLoad });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+
+  function loadHome(){
+  loadingStart();
+  loadView({func:"loadHomeView", callback: prepareData });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+
+  function loadRegistry(){
+  loadingStart();
+  loadView({func:"loadRegistryView", callback: setDataForRegistrySearch });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+  function loadCreateCompany(){
+  loadingStart();
+  loadView({func:"loadNewCompany", callback: afterNewCompanyViewLoads, });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+
+  function loadViewOpp(){
+  loadingStart();
+  loadView({func:"loadViewOpp", callback: setDataForSearch });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+  function loadCreateOpp(){
+  loadingStart();
+  loadView({func:"loadNewOpp", callback: afterNewOppViewLoads, });   // , callback: otherFunc, params: { title : "new new"}
+  };
+
+  function otherFunc(params){
+  document.getElementById("h1").textContent = params.title;
+  };
+
+ function loadView(options){
+      var id = typeof options.id === 'undefined' ? 'app' : options.id;
+      var cb = typeof options.callback === 'undefined' ? function(){} : options.callback;
+      google.script.run.withSuccessHandler(function(htmlString){
+      document.getElementById(id).innerHTML = htmlString;
+      typeof options.params === 'undefined' ? cb(): cb(options.params);
+    })[options.func]();
+ };
+
+
+  function inputEventHandler(e){
+    if(e.target.matches("#oppSearchInput")){
+      search();
+    } else if(e.target.matches("#registrySearchInput")){
+      searchRegistry();
+    };
+  };
+
+
+function changeEventHandler(e){
+    if(e.target.matches("#client")){
+    GetContacts();
+  }
+    if(e.target.matches("#bu")){
+      GetBls();
+    }
+    else if(e.target.matches("#bl")){
+      GetProducts();
+      } else if(e.target.matches("#product")){
+      GetCategories();
+      } 
+}
+
+      
+
+  function clickEventHandler(e){
+    var event;
+    var activity;
+    var bl;
+    var product;
+    var category;
+    var id;
+      if(e.target.matches(".meeting")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Meeting";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadMeetingView", callback: afterUpdateViewLoads, params: obj })
+      } else if(e.target.matches(".pitch")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Pitch";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadPitchView", callback: afterUpdateViewLoads, params: obj  }); 
+      } else if(e.target.matches(".feasibility")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Feasibility";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadFeasibilityView", callback: afterUpdateViewLoads, params: obj   });     
+      } else if(e.target.matches(".offer")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Offer";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadOfferView", callback: afterUpdateViewLoads, params: obj   });     /////
+      } else if(e.target.matches(".won")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Won";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadwWonView", callback: afterUpdateViewLoads, params: obj   });      
+      } else if(e.target.matches(".lost")){
+        loadingStart();
+        id = e.target.dataset.oppId;
+        activity = "Lost";
+        var obj = {activity:activity, id: id}
+        loadView({func:"loadLostView", callback: afterUpdateViewLoads, params: obj   });    
+     
+      } else if(e.target.matches(".editInfo")){
+          loadingStart();
+          id = e.target.dataset.oppId;
+          loadView({func:"loadEditInfoView", callback: afterEditInfoLoads, params: id   });   
+      } else if(e.target.matches(".editContacts")){
+          loadingStart();
+          id = e.target.dataset.oppId;
+          loadView({func:"loadEditContactsView", callback: afterEditContactsLoads, params: id   });   
+
+      
+      } else if(e.target.matches("#submit-opp")){
+        loadingStart();
+        var activity = e.target.dataset.activity;
+        updateOpp(activity); 
+      } else if(e.target.matches("#submitNewCompany")){ 
+        loadingStart();
+        console.log('loadstarts?')
+        activity = "Company"; 
+        logNewCompany(activity);      
+      } else if(e.target.matches("#submitUpdatedInfo")){
+        loadingStart();
+        activity = "Company"; 
+        updateCompany(activity);      
+      } else if(e.target.matches("#submitUpdatedContacts")){
+        loadingStart();
+        updateContacts();    
+      }
+};
+
+
+function toTitleCaseFront(str) {
+  //return 
+    str.replace(
+    /\w\S*/g,
+    function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    }
+  );
+  var cleanStr = str.trim()
+  return cleanStr;
+}
+
+function CheckDupe(client_name){
+
+  var dupe = false;
+  var client = toTitleCaseFront(client_name)
+  console.log(client)
+  var clientsAr = dropdownObj.clients
+  clientsAr.forEach(function(el){
+    if(el[0] === client)
+    dupe = true
+    //console.log(el[0])
+  })
+
+return dupe;
+}
+
+
+
+function logNewCompany(activity){
+//console.log('logNewCompany')
+if(validate(activity) == true){
+  var client_name = document.getElementById("client-name").value;
+  var dupe = CheckDupe(client_name)
+  if (dupe === false) {
+
+      document.getElementById("submitNewCompany").disabled = "true";
+      
+      var entity = document.getElementById("entity").value;
+      var country = document.getElementById("country").value;
+      var business_name = document.getElementById("business-name").value;
+      var vertical = document.getElementById("vertical").value;
+      var comment = document.getElementById("comment").value;
+      var vat = document.getElementById("vat").value;
+
+      var business_street = document.getElementById("street").value;
+      var business_city = document.getElementById("city").value;
+      var business_area = document.getElementById("area").value;
+      var business_code = document.getElementById("zip_code").value;
+      var fieldsObj = {
+        
+        'client_name': client_name,
+        'entity': entity,
+        'country': country,
+        'business_name': business_name,
+        'vertical': vertical,
+        'comment': comment,
+        'vat': vat,
+        'business_street': business_street,
+        'business_city': business_city,
+        'business_area': business_area,
+        'business_code': business_code,
+
+        }
+
+    
+      google.script.run.withSuccessHandler(afterNewCompany)
+      .addCompany(fieldsObj);
+      } else {
+        loadingEnd();
+        document.getElementById("dupe").classList.remove("invisible");
+        
+        setTimeout(function(){
+          document.getElementById("dupe").classList.add("invisible");
+        },3000);
+        
+    }
+    } else {
+        loadingEnd();
+        console.log("alert")
+        document.getElementById("danger").classList.remove("invisible");
+        setTimeout(function(){
+          document.getElementById("danger").classList.add("invisible");
+        },3000);
+
+    };
+
+};
+
+function endLoad(){
+  setTimeout(function(){
+  //document.getElementById("dashboard").classList.remove("invisible");
+  loadingEnd();
+  }
+  ,2000);
+  }
+
+function updateCompany(activity){
+if(validate(activity) == true){
+      document.getElementById("submitUpdatedInfo").disabled = "true";
+      var company_id = document.getElementById("company-id").value;
+      var client_name = document.getElementById("client-name").value;
+      var entity = document.getElementById("entity").value;
+      var country = document.getElementById("country").value;
+      var business_name = document.getElementById("business-name").value;
+      var vertical = document.getElementById("vertical").value;
+      var comment = document.getElementById("comment").value;
+      var vat = document.getElementById("vat").value;
+
+
+      var business_street = document.getElementById("street").value;
+      var business_city = document.getElementById("city").value;
+      var business_area = document.getElementById("area").value;
+      var business_code = document.getElementById("zip_code").value;
+    var fieldsObj = {
+    'company_id':company_id,  
+    'client_name': client_name,
+    'entity': entity,
+    'country': country,
+    'business_name': business_name,
+    'vertical': vertical,
+    'comment': comment,
+    'vat': vat,
+    'business_street': business_street,
+    'business_city': business_city,
+    'business_area': business_area,
+    'business_code': business_code,
+
+    }
+      google.script.run.withSuccessHandler(afterUpdateCompany)
+      .updateCompany(fieldsObj);
+
+    } else {
+        //console.log("alert")
+        document.getElementById("danger").classList.remove("invisible");
+        setTimeout(function(){
+          document.getElementById("danger").classList.add("invisible");
+        },3000);
+
+    };
+};
+
+
+function updateContacts(){
+  document.getElementById("submitUpdatedContacts").disabled = "true";
+  
+  var company_id = document.getElementById("company-id").value;
+  var client_name = document.getElementById("client-name").value;
+  var  contact1Name= document.getElementById("contact1Name").value;
+  var  contact1Role= document.getElementById("contact1Role").value;
+  var  contact1Mail= document.getElementById("contact1Mail").value;
+  var  contact1Phone= document.getElementById("contact1Phone").value;
+  
+  var  contact2Name= document.getElementById("contact2Name").value;
+  var  contact2Role= document.getElementById("contact2Role").value;
+  var  contact2Mail= document.getElementById("contact2Mail").value;
+  var  contact2Phone= document.getElementById("contact2Phone").value;
+  
+  var  contact3Name= document.getElementById("contact3Name").value;
+  var  contact3Role= document.getElementById("contact3Role").value;
+  var  contact3Mail= document.getElementById("contact3Mail").value;
+  var  contact3Phone= document.getElementById("contact3Phone").value;
+  
+  var  contact4Name= document.getElementById("contact4Name").value;
+  var  contact4Role= document.getElementById("contact4Role").value;
+  var  contact4Mail= document.getElementById("contact4Mail").value;
+  var  contact4Phone= document.getElementById("contact4Phone").value;
+  
+  var  contact5Name= document.getElementById("contact5Name").value;
+  var  contact5Role= document.getElementById("contact5Role").value;
+  var  contact5Mail= document.getElementById("contact5Mail").value;
+  var  contact5Phone= document.getElementById("contact5Phone").value;
+  
+  var  contact6Name= document.getElementById("contact6Name").value;
+  var  contact6Role= document.getElementById("contact6Role").value;
+  var  contact6Mail= document.getElementById("contact6Mail").value;
+  var  contact6Phone= document.getElementById("contact6Phone").value;
+  
+  var  contact7Name= document.getElementById("contact7Name").value;
+  var  contact7Role= document.getElementById("contact7Role").value;
+  var  contact7Mail= document.getElementById("contact7Mail").value;
+  var  contact7Phone= document.getElementById("contact7Phone").value;
+  
+  var  contact8Name= document.getElementById("contact8Name").value;
+  var  contact8Role= document.getElementById("contact8Role").value;
+  var  contact8Mail= document.getElementById("contact8Mail").value;
+  var  contact8Phone= document.getElementById("contact8Phone").value;
+  
+  var  contact9Name= document.getElementById("contact9Name").value;
+  var  contact9Role= document.getElementById("contact9Role").value;
+  var  contact9Mail= document.getElementById("contact9Mail").value;
+  var  contact9Phone= document.getElementById("contact9Phone").value;
+  
+  var  contact10Name= document.getElementById("contact10Name").value;
+  var  contact10Role= document.getElementById("contact10Role").value;
+  var  contact10Mail= document.getElementById("contact10Mail").value;
+  var  contact10Phone= document.getElementById("contact10Phone").value;
+
+
+
+var fieldsObj = {
+'client_name' : client_name,
+'company_id' : company_id,
+"contact1Name":contact1Name,
+"contact1Role":contact1Role,
+"contact1Mail":contact1Mail,
+"contact1Phone":contact1Phone,
+
+"contact2Name":contact2Name,
+"contact2Role":contact2Role,
+"contact2Mail":contact2Mail,
+"contact2Phone":contact2Phone,
+
+"contact3Name":contact3Name,
+"contact3Role":contact3Role,
+"contact3Mail":contact3Mail,
+"contact3Phone":contact3Phone,
+
+"contact4Name":contact4Name,
+"contact4Role":contact4Role,
+"contact4Mail":contact4Mail,
+"contact4Phone":contact4Phone,
+
+"contact5Name":contact5Name,
+"contact5Role":contact5Role,
+"contact5Mail":contact5Mail,
+"contact5Phone":contact5Phone,
+
+"contact6Name":contact6Name,
+"contact6Role":contact6Role,
+"contact6Mail":contact6Mail,
+"contact6Phone":contact6Phone,
+
+"contact7Name":contact7Name,
+"contact7Role":contact7Role,
+"contact7Mail":contact7Mail,
+"contact7Phone":contact7Phone,
+
+"contact8Name":contact8Name,
+"contact8Role":contact8Role,
+"contact8Mail":contact8Mail,
+"contact8Phone":contact8Phone,
+
+"contact9Name":contact9Name,
+"contact9Role":contact9Role,
+"contact9Mail":contact9Mail,
+"contact9Phone":contact9Phone,
+
+"contact10Name":contact10Name,
+"contact10Role":contact10Role,
+"contact10Mail":contact10Mail,
+"contact10Phone":contact10Phone,
+
+
+}
+  //console.log(fieldsObj)
+  google.script.run.withSuccessHandler(afterUpdateContacts)
+  .updateContacts(fieldsObj);
+};
+
+
+  function afterEditInfoLoads(id){
+    //console.log("afterEditInfoLoads");
+    loadingStart();
+    var submitButton = document.querySelector("#submitUpdatedInfo");
+    var id = id;
+    //console.log(id)
+    document.getElementById("company-id").value = id;
+    //done loading
+    //
+    google.script.run.withSuccessHandler(fillExistingCompanyInfo).getCompanyInfoById(id);
+  }
+
+    function afterEditContactsLoads(id){
+    //console.log("afterEditContactsLoads");
+    loadingStart();
+    var submitButton = document.querySelector("#submitUpdatedContacts");
+    var id = id;
+    document.getElementById("company-id").value = id;
+    //done loading
+    //
+    google.script.run.withSuccessHandler(fillExistingCompanyContacts).getCompanyContactsById(id);
+  }
+
+
+function fillExistingCompanyContacts(obj){
+
+  //console.log(obj)
+  var companyId = document.getElementById("company-id");
+  //console.log(companyId)
+  companyId.value = obj.companyId;
+
+  var companyName = document.getElementById("client-name");
+  companyName.value = obj.clientName;
+
+  document.getElementById("contact1Name").value = obj.contact1Name
+document.getElementById("contact1Role").value = obj.contact1Role
+document.getElementById("contact1Mail").value = obj.contact1Mail
+document.getElementById("contact1Phone").value = obj.contact1Phone
+document.getElementById("contact2Name").value = obj.contact2Name
+document.getElementById("contact2Role").value = obj.contact2Role
+document.getElementById("contact2Mail").value = obj.contact2Mail
+document.getElementById("contact2Phone").value = obj.contact2Phone
+document.getElementById("contact3Name").value = obj.contact3Name
+document.getElementById("contact3Role").value = obj.contact3Role
+document.getElementById("contact3Mail").value = obj.contact3Mail
+document.getElementById("contact3Phone").value = obj.contact3Phone
+document.getElementById("contact4Name").value = obj.contact4Name
+document.getElementById("contact4Role").value = obj.contact4Role
+document.getElementById("contact4Mail").value = obj.contact4Mail
+document.getElementById("contact4Phone").value = obj.contact4Phone
+document.getElementById("contact5Name").value = obj.contact5Name
+document.getElementById("contact5Role").value = obj.contact5Role
+document.getElementById("contact5Mail").value = obj.contact5Mail
+document.getElementById("contact5Phone").value = obj.contact5Phone
+document.getElementById("contact6Name").value = obj.contact6Name
+document.getElementById("contact6Role").value = obj.contact6Role
+document.getElementById("contact6Mail").value = obj.contact6Mail
+document.getElementById("contact6Phone").value = obj.contact6Phone
+document.getElementById("contact7Name").value = obj.contact7Name
+document.getElementById("contact7Role").value = obj.contact7Role
+document.getElementById("contact7Mail").value = obj.contact7Mail
+document.getElementById("contact7Phone").value = obj.contact7Phone
+document.getElementById("contact8Name").value = obj.contact8Name
+document.getElementById("contact8Role").value = obj.contact8Role
+document.getElementById("contact8Mail").value = obj.contact8Mail
+document.getElementById("contact8Phone").value = obj.contact8Phone
+document.getElementById("contact9Name").value = obj.contact9Name
+document.getElementById("contact9Role").value = obj.contact9Role
+document.getElementById("contact9Mail").value = obj.contact9Mail
+document.getElementById("contact9Phone").value = obj.contact9Phone
+document.getElementById("contact10Name").value = obj.contact10Name
+document.getElementById("contact10Role").value = obj.contact10Role
+document.getElementById("contact10Mail").value = obj.contact10Mail
+document.getElementById("contact10Phone").value = obj.contact10Phone
+
+  loadingEnd();
+  }
+
+
+
+
+
+
+  function fillExistingCompanyInfo(obj){
+  var companyId = document.getElementById("company-id");
+  companyId.value = obj.companyId;
+
+  var companyName = document.getElementById("client-name");
+  companyName.value = obj.companyName;
+
+  var companyCountry = document.getElementById("country")
+    var ar = obj.companyCountry;
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      companyCountry.appendChild(option);   
+    });
+
+  var entity = document.getElementById("entity");
+    var ar = obj.entity;
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      entity.appendChild(option);   
+    });
+
+  var vertical = document.getElementById("vertical");
+    var ar = obj.vertical;
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      vertical.appendChild(option);   
+    });
+
+  var businessName = document.getElementById("business-name");
+  businessName.value = obj.businessName;
+
+  var vat = document.getElementById("vat");
+  vat.value = obj.vat;
+
+  var road = document.getElementById("street");
+  road.value = obj.road;
+
+  var city = document.getElementById("city");
+  city.value = obj.city;
+
+  var area = document.getElementById("area");
+  area.value = obj.area;
+
+  var zipCode = document.getElementById("zip_code");
+  zipCode.value = obj.zipCode;
+
+  loadingEnd();
+  }
+
+  function GetBls() { 
+    //console.log("here")
+        var bu = document.getElementById("bu").value;
+        var bl = document.getElementById("bl"); 
+        //var existingBL = document.getElementById("bl").value;
+        var blArRaw = []; 
+        productsArray = dropdownObj.products; 
+        productsArray.forEach(function(row){
+          if(row[0] == bu){
+            //bl.textContent = existingBL;   
+            bl.innerHTML = '';
+            product.innerHTML = '';
+            category.innerHTML = '';  
+            blArRaw.push(row[1])
+          }
+        })
+        blArRaw.unshift("");
+        blAr = [...new Set(blArRaw)] 
+        
+        blAr.forEach(function(el){      
+               
+            let option = document.createElement("option");
+            option.textContent = el;
+            
+            bl.appendChild(option);   
+            })
+        //GetProducts();
+        //GetCategories();
+};
+
+
+function GetProducts() { 
+        var bu = document.getElementById("bu").value;
+        var bl = document.getElementById("bl").value;
+        var product = document.getElementById("product"); 
+        //var existingProduct = document.getElementById("product").value; 
+        var productArRaw = []; 
+        productsArray = dropdownObj.products;     
+        productsArray.forEach(function(row){
+          if(row[0] == bu && row[1] == bl){
+            //product.textContent = existingProduct;
+             product.innerHTML = '';
+             category.innerHTML = '';  
+            productArRaw.push(row[2])
+          }
+        })
+        productArRaw.unshift("");
+        productAr = [...new Set(productArRaw)] 
+        
+        productAr.forEach(function(el){                   
+          let option = document.createElement("option");
+          option.textContent = el;
+          product.appendChild(option);   
+          })
+        //GetCategories();
+};
+
+  function GetCategories() { 
+        var bu = document.getElementById("bu").value;
+        var bl = document.getElementById("bl").value;
+        var product = document.getElementById("product").value;
+        var category = document.getElementById("category"); 
+        //var existingCategory = document.getElementById("category").value; 
+        var categoryArRaw = [];
+        productsArray = dropdownObj.products;       
+        productsArray.forEach(function(row){
+          if(row[0] == bu && row[1] == bl && row[2] == product){
+            //category.textContent = existingCategory;
+            product.innerHTML = '';
+            category.innerHTML = '';  
+            categoryArRaw.push(row[3])
+          }
+        })
+        categoryArRaw.unshift("");
+        categoryAr = [...new Set(categoryArRaw)] 
+        //category.innerHTML = '';  
+        categoryAr.forEach(function(el){                    
+            let option = document.createElement("option");
+            option.textContent = el;  
+            category.appendChild(option);
+        });
+};
+
+
+function GetContacts() { 
+    
+      var client = document.getElementById("client").value;
+      var contact_1 = document.getElementById("contact_1");
+      var contact_2 = document.getElementById("contact_2");   
+      var contact_3 = document.getElementById("contact_3");
+      //console.log(client)
+      clientsArray= dropdownObj.clients 
+      //console.log(clientsArray)
+      clientsArray.forEach(function(item){      
+        if(item[0] === client){
+          contact_1.innerHTML = '';
+          item[1].forEach(function(contact){        
+          let option = document.createElement("option");
+          option.textContent = contact;
+          contact_1.appendChild(option);  
+          })
+        }
+      })
+      clientsArray.forEach(function(item){
+        if(item[0] === client){
+          contact_2.innerHTML = '';
+          item[1].forEach(function(contact){
+          let option = document.createElement("option");
+          option.textContent = contact;
+          contact_2.appendChild(option);  
+          })
+        }
+      })
+      clientsArray.forEach(function(item){
+        if(item[0] === client){
+          contact_3.innerHTML = '';
+          item[1].forEach(function(contact){
+          let option = document.createElement("option");
+          option.textContent = contact;
+          contact_3.appendChild(option);     
+          })
+        }
+      })
+  };
+
+
+
+
+  function afterNewOppViewLoads(){
+//activity:activity, id: id;
+
+  var submitButton = document.querySelector("#submit-opp");
+  submitButton.dataset.activity = 'Prospecting';
+  setDropdowns(dropdownObj);
+  
+  //google.script.run.withSuccessHandler(setDropdowns).getDropdowns();
+  };
+
+
+  function afterNewCompanyViewLoads(){
+//activity:activity, id: id;
+
+  var submitButton = document.querySelector("#submitNewCompany");
+
+  google.script.run.withSuccessHandler(setCompanyDropdowns).getCompanyDropdowns();
+  };
+
+
+function setCompanyDropdowns(obj){
+//console.log(obj.entity)
+var companyCountry = document.getElementById("country")
+    var countryAr = obj.companyCountry;
+    countryAr.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      companyCountry.appendChild(option);   
+    });
+
+  var entity = document.getElementById("entity");
+    var entityAr = obj.entity;
+    entityAr.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      entity.appendChild(option);   
+    });
+
+  var vertical = document.getElementById("vertical");
+    var verticalAr = obj.vertical;
+    verticalAr.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      vertical.appendChild(option);   
+    });
+
+loadingEnd();
+}
+
+
+
+function setDropdowns(dropdownObj){ 
+
+var clientsArComplete = dropdownObj.clients;
+var productsAr = dropdownObj.products;
+
+var sesAr = dropdownObj.salesEngineers;
+var psAr = dropdownObj.presales;
+var sourcesAr = dropdownObj.sources; 
+var clientsAr = [];
+
+clientsArComplete.forEach(function(ar){
+  clientsAr.push(ar[0])
+  })
+var clients = document.getElementById("client");
+clientsAr.forEach(function(el){
+  var option = document.createElement("option");
+  option.textContent = el;
+  clients.appendChild(option);   
+  });
+
+var bu = document.getElementById("bu");
+var buArRaw = [];
+productsAr.forEach(function(item) {    
+  buArRaw.push(item[0])
+})
+  buAr = [...new Set(buArRaw)] 
+  
+buAr.forEach(function(el){
+  let option = document.createElement("option");
+  option.textContent = el;
+  bu.appendChild(option);    
+});
+
+var se = document.getElementById("se");   
+  sesAr.unshift("");
+  sesAr.forEach(function(item) {    
+    let option = document.createElement("option");
+    option.textContent = item;
+    se.appendChild(option);    
+  });
+
+var presale = document.getElementById("presale");   
+  psAr.unshift("");
+  psAr.forEach(function(item) {    
+    let option = document.createElement("option");
+    option.textContent = item;
+    presale.appendChild(option);    
+  });
+
+var source = document.getElementById("source");   
+  sourcesAr.unshift("");
+  sourcesAr.forEach(function(item) {    
+    let option = document.createElement("option");
+    option.textContent = item;
+    source.appendChild(option);    
+  });
+
+loadingEnd();
+}
+
+
+  function afterUpdateViewLoads(obj){
+//activity:activity, id: id
+  //loading
+  loadingStart();
+  var submitButton = document.querySelector("#submit-opp");
+  submitButton.dataset.activity = obj.activity;
+  var id = obj.id;
+  document.getElementById("oppId").value = id;
+  //done loading
+  //
+  google.script.run.withSuccessHandler(fillExistingInfo).getOppInfoById(id);
+  };
+
+  function fillExistingInfo(obj){
+    document.getElementById('oppName').value = obj['Opportunity Name']
+    document.getElementById('client').value = obj['Client']
+    document.getElementById('final_client').value = obj['Final Client']
+
+    var contact_1 = document.getElementById("contact_1");
+    var contacts1Ar = obj['Business contact 1'];
+    contacts1Ar.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      contact_1.appendChild(option);   
+    });
+
+    var contact_2 = document.getElementById("contact_2");
+    var contacts2Ar = obj['Business contact 2'];
+    contacts2Ar.forEach(function(el){
+      var option = document.createElement("option");
+
+      option.textContent = el;
+      contact_2.appendChild(option);   
+    });
+
+    var contact_3 = document.getElementById("contact_3");
+    var contacts3Ar = obj['Business contact 3'];
+    contacts2Ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      contact_3.appendChild(option);   
+
+    });      
+
+
+    document.getElementById('bu').value = obj['Business Unit']    
+
+    var bl = document.getElementById("bl");
+    var ar = obj['Business Line'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      bl.appendChild(option);   
+    });      
+
+    var product = document.getElementById("product");
+    var ar = obj['Product'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      product.appendChild(option);   
+    });   
+
+    var category = document.getElementById("category");
+    var ar = obj['Category'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      category.appendChild(option);   
+    });   
+
+    var presale = document.getElementById("presale");
+    var ar = obj['Presale Rep'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      presale.appendChild(option);   
+    });   
+
+    var se = document.getElementById("se");
+    var ar = obj['Sales Engineeer'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      se.appendChild(option);   
+    }); 
+    //console.log(obj)
+
+    var lostReasons = document.getElementById("lost_reason");
+  
+    var ar = obj['Lost Reason'];
+    ar.forEach(function(el){
+      var option = document.createElement("option");
+      option.textContent = el;
+      lostReasons.appendChild(option);   
+    
+    }); 
+
+
+
+    document.getElementById('brief').value = obj['Attachment']  
+    document.getElementById('amount').value = obj['Amount €'] 
+    document.getElementById('description').value = obj['Comment'] 
+    document.getElementById('start').value = obj['Expected Start Date'] 
+    document.getElementById('end').value = obj['Expected End Date'] 
+    document.getElementById('source').value = obj['Source'] 
+    loadingEnd();
+}
+
+
+
+
+function prepareData(){
+  if(dropdownObj == undefined){
+  google.script.run.withSuccessHandler(storeDropdownsData).getDropdowns();
+  google.script.run.withSuccessHandler(storeUser).getUserB();
+  return;
+  }
+  loadingEnd();
+  return;
+}
+
+
+
+  function storeUser(x){
+    user = x
+    return user;
+  }
+  function storeDropdownsData(obj){
+  // productsArray = ar; 
+  dropdownObj = obj;
+  loadingEnd();
+  //console.log(dropdownObj.clients)
+  return dropdownObj;
+  }
+
+
+function setDataForRegistrySearch(){
+  loadingStart();
+  //console.log("setDataForRegistrySearch")
+  google.script.run.withSuccessHandler(displayRegistryResults).getDataForRegistrySearchBox();
+};
+
+function setDataForSearch(){
+  loadingStart();
+  google.script.run.withSuccessHandler(displayOppResults).getDataForSearchBox();
+};
+
+function displayRegistryResults(resultsData){
+
+//loadingStart();
+//data = resultsData.slice(); 
+registryData = resultsData;
+
+//no owner of company currently
+/*
+resultsData.forEach(function(row){
+var userAr = [row[6]]
+if(row[6] === user){
+data.push(row)
+}
+})
+*/
+
+//console.log("displayRegistryResults")
+var templateBox = document.getElementById("rowTemplate");
+var template = templateBox.content;
+var searchResultsBox = document.getElementById("searchResults");
+registryData.forEach(function(r){
+var tr = template.cloneNode(true);
+
+var clientId= tr.querySelector(".client-id"); 
+var client = tr.querySelector(".client");
+var country = tr.querySelector(".country");
+var entity = tr.querySelector(".entity");
+var vertical = tr.querySelector(".vertical");
+var contact_1_name = tr.querySelector(".contact_1_name");
+var contact_1_role = tr.querySelector(".contact_1_role");
+var editInfo = tr.querySelector(".editInfo");
+var editContacts = tr.querySelector(".editContacts");
+
+editInfo.dataset.oppId = r[0];
+editContacts.dataset.oppId = r[0];
+
+clientId.textContent = r[0]; 
+client.textContent = r[1];
+country.textContent = r[2];
+entity.textContent = r[3];
+vertical.textContent = r[4];
+contact_1_name.textContent = r[5];
+contact_1_role.textContent = r[6];
+searchResultsBox.appendChild(tr);
+})
+loadingEnd();
+}
+  
+function searchRegistry(){
+  
+  var searchInput = document.getElementById("registrySearchInput").value.toString().toLowerCase().trim();
+  var resultsArray = registryData.filter(function(row){
+    //console.log(searchInput)
+  return row[1].toString().toLowerCase().indexOf(searchInput) !== -1;
+
+  })
+  //console.log(resultsArray)
+  var searchResultsBox = document.getElementById("searchResults");
+  var templateBox = document.getElementById("rowTemplate");
+  var template = templateBox.content;
+  searchResultsBox.innerHTML="";
+  resultsArray.forEach(function(r){
+var tr = template.cloneNode(true);
+
+var clientId= tr.querySelector(".client-id"); 
+var client = tr.querySelector(".client");
+var country = tr.querySelector(".country");
+var entity = tr.querySelector(".entity");
+var vertical = tr.querySelector(".vertical");
+var contact_1_name = tr.querySelector(".contact_1_name");
+var contact_1_role = tr.querySelector(".contact_1_role");
+var editInfo = tr.querySelector(".editInfo");
+var editContacts = tr.querySelector(".editContacts");
+
+editInfo.dataset.oppId = r[0];
+editContacts.dataset.oppId = r[0];
+
+clientId.textContent = r[0]; 
+client.textContent = r[1];
+country.textContent = r[2];
+entity.textContent = r[3];
+vertical.textContent = r[4];
+contact_1_name.textContent = r[5];
+contact_1_role.textContent = r[6];
+searchResultsBox.appendChild(tr);
+  });
+};
+
+
+
+
+
+function displayOppResults(resultsData){
+
+loadingStart();
+//data = resultsData.slice(); 
+oppData = [];
+resultsData.forEach(function(row){
+var userAr = [row[6]]
+if(row[6] === user){
+oppData.push(row)
+}
+})
+
+var templateBox = document.getElementById("rowTemplate");
+var template = templateBox.content;
+var searchResultsBox = document.getElementById("searchResults");
+oppData.forEach(function(r){
+var tr = template.cloneNode(true);
+var timestamp = tr.querySelector(".timestamp");
+var oppId = tr.querySelector(".oppId");
+var oppName = tr.querySelector(".oppName");
+var client = tr.querySelector(".client");
+var businessUnit = tr.querySelector(".businessUnit");
+var activity = tr.querySelector(".activity");
+var meetingButton = tr.querySelector(".meeting");
+var pitchButton = tr.querySelector(".pitch");
+var feasibilityButton = tr.querySelector(".feasibility");
+var offerButton = tr.querySelector(".offer");
+var wonButton = tr.querySelector(".won");
+var lostButton = tr.querySelector(".lost");
+
+meetingButton.dataset.oppId = r[2];
+pitchButton.dataset.oppId = r[2];
+feasibilityButton.dataset.oppId = r[2];
+offerButton.dataset.oppId = r[2];
+wonButton.dataset.oppId = r[2];
+lostButton.dataset.oppId = r[2];
+
+var setActivity = r[5];
+//console.log(setActivity)
+
+if(setActivity == 'Pitch'){
+meetingButton.hidden = true;
+} else if (setActivity == 'Feasibility'){
+meetingButton.hidden = true;
+pitchButton.hidden = true;
+} else if (setActivity == 'Offer'){
+meetingButton.hidden = true;
+pitchButton.hidden = true;
+feasibilityButton.hidden = true;
+}
+
+
+timestamp.textContent = r[0]; 
+oppName.textContent = r[1];
+oppId.textContent = r[2];
+client.textContent = r[3];
+businessUnit.textContent = r[4];
+activity.textContent = r[5];
+searchResultsBox.appendChild(tr);
+})
+loadingEnd();
+};
+
+function search(){
+  var searchInput = document.getElementById("oppSearchInput").value.toString().toLowerCase().trim();
+  var resultsArray = oppData.filter(function(row){
+  return row[1].toString().toLowerCase().indexOf(searchInput) !== -1;
+  })
+  var searchResultsBox = document.getElementById("searchResults");
+  var templateBox = document.getElementById("rowTemplate");
+  var template = templateBox.content;
+  searchResultsBox.innerHTML="";
+  resultsArray.forEach(function(r){
+    var tr = template.cloneNode(true);
+    var timestamp = tr.querySelector(".timestamp");
+    var oppId = tr.querySelector(".oppId");
+    var oppName = tr.querySelector(".oppName");
+    var client = tr.querySelector(".client");
+    var businessUnit = tr.querySelector(".businessUnit");
+    var activity = tr.querySelector(".activity");
+    var meetingButton = tr.querySelector(".meeting");
+    var pitchButton = tr.querySelector(".pitch");
+    var feasibilityButton = tr.querySelector(".feasibility");
+    var offerButton = tr.querySelector(".offer");
+    var wonButton = tr.querySelector(".won");
+    var lostButton = tr.querySelector(".lost");
+
+    meetingButton.dataset.oppId = r[2];
+    pitchButton.dataset.oppId = r[2];
+    feasibilityButton.dataset.oppId = r[2];
+    offerButton.dataset.oppId = r[2];
+    wonButton.dataset.oppId = r[2];
+    lostButton.dataset.oppId = r[2];
+
+    timestamp.textContent = r[0]; 
+    oppName.textContent = r[1];
+    oppId.textContent = r[2];
+    client.textContent = r[3];
+    businessUnit.textContent = r[4];
+    activity.textContent = r[5];
+    searchResultsBox.appendChild(tr);
+  });
+};
+
+
+function getToValidate(activity){
+var toValidate;
+var activity = activity;
+  switch (activity) {
+  case 'Prospecting':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#source");
+    break;
+  case 'Meeting':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description");
+    break;
+  case 'Pitch':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description,#amount,#bl");
+    break;
+  case 'Feasibility':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description,#amount,#bl,#product,#category,#brief,#presale");
+    break;
+  case 'Offer':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description,#amount,#bl,#product,#category,#brief,#presale,#start,#end");
+    break;
+  case 'Won':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description,#amount,#bl,#product,#category,#brief,#presale,#start,#end"); 
+    break; 
+  case 'Lost':
+    toValidate = document.querySelectorAll("#client,#contact_1,#bu,#description,#lost_reason");      
+    break;
+  case 'Company':
+    toValidate = document.querySelectorAll("#client-name,#entity,#country");      
+    break;  
+  };
+  return toValidate;
+
+}
+
+function validate(activity){
+  var toValidate = getToValidate(activity);
+  return Array.prototype.every.call(toValidate,function(el){
+     return el.checkValidity();
+  });
+};
+
+
+
+function updateOpp(activity) {
+  if(validate(activity) == true){
+  var activity = activity; 
+    
+    document.getElementById("submit-opp").disabled = "true";
+
+    var fieldsObj = {
+      'ui_oppId': document.getElementById("oppId").value,
+      'client': document.getElementById("client").value,
+      'ui_oppName': document.getElementById("oppName").value,
+      'description': document.getElementById("description").value,
+      'final_client': document.getElementById("final_client").value,
+      'contact_1':document.getElementById("contact_1").value,
+      'contact_2': document.getElementById("contact_2").value,
+      'contact_3': document.getElementById("contact_3").value,
+      'activity': activity,
+      'bu': document.getElementById("bu").value,
+      'bl': document.getElementById("bl").value,
+      'product': document.getElementById("product").value,
+      'category': document.getElementById("category").value,
+      'start': document.getElementById("start").value,
+      'end': document.getElementById("end").value,
+      'amount':document.getElementById("amount").value, 
+      'brief': document.getElementById("brief").value,
+      'presale': document.getElementById("presale").value,
+      'se' : document.getElementById("se").value,
+      'lost_reason' : document.getElementById("lost_reason").value,
+      'source' : document.getElementById("source").value
+      };
+
+    google.script.run.withSuccessHandler(afterUpdateOpp).submitOpp(fieldsObj); 
+    } else {
+        loadingEnd();
+        document.getElementById("danger").classList.remove("invisible");
+        setTimeout(function(){
+          document.getElementById("danger").classList.add("invisible");
+        },3000);
+
+    }
+};
+
+function afterUpdateOpp(e) {
+  loadingEnd();
+
+  document.getElementById("updated").classList.remove("invisible");
+
+  document.getElementById("client").value = '';
+  document.getElementById("oppId").value = '';
+  document.getElementById("oppName").value = '';
+  document.getElementById("description").value = '';
+  document.getElementById("final_client").value = '';
+  document.getElementById("contact_1").value = '';
+  document.getElementById("contact_2").value = '';
+  document.getElementById("contact_3").value = '';
+  document.getElementById("bu").value = '';
+  document.getElementById("bl").value = '';
+  document.getElementById("product").value = '';
+  document.getElementById("category").value = '';
+  document.getElementById("start").value = '';
+  document.getElementById("end").value = '';
+  document.getElementById("amount").value = '';
+  document.getElementById("brief").value = '';
+  document.getElementById("presale").value = '';
+  document.getElementById("se").value = '';
+  document.getElementById("source").value = '';
+
+
+  
+  
+    setTimeout(function(){
+    loadViewOpp();
+  },1500);
+  
+  
+};
+
+
+function afterUpdateCompany(e) {
+  loadingEnd();
+  document.getElementById("updated").classList.remove("invisible");
+
+  document.getElementById("company-id").value = '';
+  document.getElementById("client-name").value = '';
+  document.getElementById("entity").value= '';
+  document.getElementById("country").value= '';
+  document.getElementById("business-name").value= '';
+  document.getElementById("vertical").value= '';
+  document.getElementById("comment").value= '';
+  document.getElementById("vat").value= '';
+
+  document.getElementById("street").value= '';
+  document.getElementById("city").value= '';
+  document.getElementById("area").value= '';
+  document.getElementById("zip_code").value= '';
+  prepareData();
+  loadingEnd();
+  setTimeout(function(){
+    loadRegistry();
+    },1500);
+  //
+};
+
+
+function afterNewCompany(e) {
+  document.getElementById("updated").classList.remove("invisible");
+  document.getElementById("client-name").value = '';
+  document.getElementById("entity").value= '';
+  document.getElementById("country").value= '';
+  document.getElementById("business-name").value= '';
+  document.getElementById("vertical").value= '';
+  document.getElementById("comment").value= '';
+  document.getElementById("vat").value= '';
+
+  document.getElementById("street").value= '';
+  document.getElementById("city").value= '';
+  document.getElementById("area").value= '';
+  document.getElementById("zip_code").value= '';
+
+  //loadRegistry()
+  loadingEnd();
+
+};
+
+function afterUpdateContacts(e) {
+  loadingEnd();
+  document.getElementById("updated").classList.remove("invisible");
+  forcePrepareDropdown();
+  /*
+  setTimeout(function(){
+    document.getElementById("updated").classList.add("invisible");
+  },4000);
+  */
+    setTimeout(function(){
+    loadRegistry();
+  },1500);
+};
+
+
+function forcePrepareDropdown(){
+  google.script.run.withSuccessHandler(storeDropdownsData).getDropdowns();
+  return;
+}
+
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+
+  </body>
+</html>
