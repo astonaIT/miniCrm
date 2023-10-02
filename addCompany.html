@@ -1,0 +1,101 @@
+<h3>Add a new company</h3>
+<div class = "add-company-form">
+
+    
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="client-name" style="margin-bottom: 0rem" >Client Name *</label>
+  <input type="text" id="client-name" class="form-control"  required/>
+  </div> 
+  </div>
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="entity" style="margin-bottom: 0rem" >Entity *</label>
+  <select id="entity" class="form-control"required  ></select>
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="country" style="margin-bottom: 0rem" >Country *</label>
+  <select id="country" class="form-control" required ></select>
+  </div> 
+  </div>
+
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="source" style="margin-bottom: 0rem" >Business Name</label>
+  <input type="text" id="business-name" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="vertical" style="margin-bottom: 0rem" >Vertical</label>
+  <select id="vertical" class="form-control" ></select>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="vat" style="margin-bottom: 0rem" >Vat</label>
+  <input type="text" id="vat" class="form-control" />
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_street" style="margin-bottom: 0rem" >Street</label>
+  <input type="text" id="street" class="form-control" />
+  </div> 
+  </div>
+
+    <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_city" style="margin-bottom: 0rem" >City</label>
+  <input type="text" id="city" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_area" style="margin-bottom: 0rem" >Area</label>
+  <input type="text" id="area" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_code" style="margin-bottom: 0rem" >Code</label>
+  <input type="text" id="zip_code" class="form-control" />
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="comment" style="margin-bottom: 0rem" >Comment</label>
+  <textarea id="comment" class="form-control"> </textarea>
+  </div> 
+  </div>
+
+    
+  <div class="form-row">
+    <div class="form-group col-md-6 narrow" >
+      <button id="submitNewCompany" class="btn btn-primary mt-3"> 
+        Add Company
+      </button>
+        <div class="alert alert-danger invisible mt-3" id = "danger" role="alert">Please review your submission.</div>
+        <div class="alert alert-success invisible mt-3" id = "updated" role="alert">Company added.</div>
+        <div class="alert alert-danger invisible mt-3" id = "dupe" role="alert">Looks like this company already exists.</div>
+
+    </div>
+  </div>
+</div>
