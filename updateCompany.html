@@ -1,0 +1,117 @@
+<h3>Update Company Info</h3>
+<div class = "edit-info-form">
+
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="company-id" style="margin-bottom: 0rem" >Company Id</label>
+  <input type="text" id="company-id" class="form-control"  disabled required/>
+  </div> 
+  </div>
+
+    
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="client-name" style="margin-bottom: 0rem" >Client Name</label>
+  <input type="text" id="client-name" class="form-control"  disabled required/>
+  </div> 
+  </div>
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="entity" style="margin-bottom: 0rem" >Entity *</label>
+  <select id="entity" class="form-control"required  ></select>
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="country" style="margin-bottom: 0rem" >Country *</label>
+  <select id="country" class="form-control" required ></select>
+  </div> 
+  </div>
+
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="source" style="margin-bottom: 0rem" >Business Name</label>
+  <input type="text" id="business-name" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="vertical" style="margin-bottom: 0rem" >Vertical</label>
+  <select id="vertical" class="form-control" ></select>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="vat" style="margin-bottom: 0rem" >Vat</label>
+  <input type="text" id="vat" class="form-control" />
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_street" style="margin-bottom: 0rem" >Street</label>
+  <input type="text" id="street" class="form-control" />
+  </div> 
+  </div>
+
+    <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_city" style="margin-bottom: 0rem" >City</label>
+  <input type="text" id="city" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_area" style="margin-bottom: 0rem" >Area</label>
+  <input type="text" id="area" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="business_code" style="margin-bottom: 0rem" >Code</label>
+  <input type="text" id="zip_code" class="form-control" />
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="comment" style="margin-bottom: 0rem" >Comment</label>
+  <textarea id="comment" class="form-control"> </textarea>
+  </div> 
+  </div>
+
+    
+
+
+  <div class="form-row">
+    <div class="form-group col-md-6 narrow" >
+      <button id="submitUpdatedInfo" class="btn btn-primary mt-3"> 
+       Update Company
+ <!-->       <span id = "idle" style="visibility:visible;">Update Opp </span>
+             <span id="sending" class="spinner-border spinner-border-sm" role="status" style="visibility:hidden;">   </span> <!-->
+      </button>
+      <div class="form-row mt-3">
+        <div class="alert alert-danger invisible" id = "danger" role="alert">Please review your submission.</div>
+        <div class="alert alert-success invisible" id = "updated" role="alert">Company updated successfully.</div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+</div>
