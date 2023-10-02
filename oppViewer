@@ -1,0 +1,50 @@
+function getDataForSearchBox() {
+const ss = SpreadsheetApp.getActiveSpreadsheet();
+const latestWs = ss.getSheetByName("Latest Snapshot");
+
+var data = latestWs.getRange(2,1, latestWs.getLastRow()-1,30).getValues();
+resultsData = [];
+data.forEach(function(row){
+  if(row[4] !== 'Closed'){
+  rowAr = []
+  rowAr.push(Utilities.formatDate(row[0], 'Europe/Rome', 'dd-MM-yyyy').toString());   //timestamp  
+  rowAr.push(row[9]);   //oppName
+  rowAr.push(row[2]);   //oppId
+  rowAr.push(row[6]);   //client
+  rowAr.push(row[16]);  //bu
+  rowAr.push(row[15]);  //activity
+  rowAr.push(row[1]);  //user
+  resultsData.push(rowAr)
+  };
+});
+console.log(resultsData)
+return resultsData;
+};
+
+
+
+
+
+function getDataForRegistrySearchBox() {
+const ss = SpreadsheetApp.getActiveSpreadsheet();
+const clientsDbWs = ss.getSheetByName("Client DB");
+
+var data = clientsDbWs.getRange(3,1, clientsDbWs.getLastRow()-1,18).getValues();
+resultsData = [];
+data.forEach(function(row){
+
+  rowAr = []
+  rowAr.push(row[0]);   //clientUd  
+  rowAr.push(row[1]);   //client
+  rowAr.push(row[2]);   //country
+  rowAr.push(row[3]);   //entity
+  rowAr.push(row[5]);  //vertical
+  rowAr.push(row[14]);  //name
+  rowAr.push(row[15]);  //role
+  resultsData.push(rowAr)
+
+});
+console.log(resultsData)
+return resultsData;
+};
+
