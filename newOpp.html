@@ -1,0 +1,169 @@
+  <div class = "new-opp-form">
+ 
+   <div class="form-row d-none" >
+    <div class="form-group col-md-6 narrow" >
+    <label for="oppId" style="margin-bottom: 0rem" >Opp Id</label>
+    <input id="oppId" class="form-control" disabled required></input>
+    </div> 
+  </div>
+
+  <div class="form-row d-none" >
+    <div class="form-group col-md-6 narrow" >
+    <label for="oppName" style="margin-bottom: 0rem" >Opp Name</label>
+    <input id="oppName" class="form-control" disabled ></input>
+    </div> 
+  </div>
+
+
+  <div class="form-row lost d-none">
+    <div class="form-group col-md-6 narrow" >
+    <label for="lost_reason"style="margin-bottom: 0rem" >Lost Reason *</label>
+    <select id="lost_reason" class="form-control "  ></select>
+    </div> 
+  </div>
+
+  <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="client" style="margin-bottom: 0rem" >Client *</label>
+  <select id="client" class="form-control" required ></select>
+
+  </div> 
+  </div>
+
+ <div class="form-row" >
+  <div class="form-group col-md-6 narrow" >
+  <label for="final_client" style="margin-bottom: 0rem" >Final Client</label>
+  <input id="final_client" class="form-control" ></input>
+
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="contact_1"style="margin-bottom: 0rem" >Contact *</label>
+  <select id="contact_1" class="form-control" required ></select>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="contact_2"style="margin-bottom: 0rem" >Contact</label>
+  <select id="contact_2" class="form-control"  ></select>
+  </div> 
+  </div>
+
+    <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="contact_3"style="margin-bottom: 0rem" >Contact</label>
+  <select id="contact_3" class="form-control"  ></select>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="source" style="margin-bottom: 0rem" >Source *</label>
+  <select id="source" class="form-control"required > </select>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="bu" style="margin-bottom: 0rem" >Business Unit *</label>
+  <select id="bu" class="form-control bu" required></select>
+  </div> 
+  </div>
+
+    <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="bl" style="margin-bottom: 0rem" >Business Line</label>
+  <select id="bl" class="form-control bl"></select>
+  </div> 
+  </div>
+
+      <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="product" style="margin-bottom: 0rem" >Product</label>
+  <select id="product" class="form-control product"></select>
+  </div> 
+  </div>
+
+      <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="category" style="margin-bottom: 0rem" >Category</label>
+  <select id="category" class="form-control category"></select>
+  </div> 
+  </div>
+
+
+
+   <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="presale" style="margin-bottom: 0rem" >Pre Sale/Account Manager</label>
+  <select id="presale" class="form-control"></select>
+  </div> 
+  </div>
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="se" style="margin-bottom: 0rem" >Sales Engineer</label>
+  <select id="se" class="form-control"></select>
+  </div> 
+  </div>
+
+
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="brief" style="margin-bottom: 0rem" >Attachment (drive url)</label>
+  <input type="url" id="brief" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="amount" style="margin-bottom: 0rem" >Total Amount €</label>
+  <input type="number" id="amount" class="form-control" />
+  </div> 
+  </div>
+
+    <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="description" style="margin-bottom: 0rem" >Comment</label>
+  <textarea  id="description" class="form-control"></textarea>
+  </div> 
+  </div>
+
+  <div class="form-row">
+  <div class="form-group col-md-6 narrow" >
+  <label for="start" style="margin-bottom: 0rem" >Expected Start Date</label>
+  <input type="date" id="start" class="form-control" />
+  </div> 
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-md-6 narrow" >
+      <label for="end" style="margin-bottom: 0rem" >Expected End Date</label>
+      <input type="date" id="end" class="form-control" />
+    </div> 
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-md-6 narrow" >
+      <button id="submit-opp" class="btn btn-primary mt-3"> 
+       Create new opp
+       </button>
+      <div class="form-row mt-3">
+        <div class="alert alert-danger invisible" id = "danger" role="alert">Please review your submission.</div>
+        <div class="alert alert-success invisible" id = "updated" role="alert">Opportunity created successfully.</div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+</div>
+
+
